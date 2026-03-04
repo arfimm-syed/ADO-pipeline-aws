@@ -1,9 +1,12 @@
+provider "aws" {
+  region = var.region
+}
 
-resource "aws_s3_bucket" "S3" {
-  bucket = "my-tf-bucket-haigi"
+resource "aws_s3_bucket" "s3" {
+  bucket = var.bucket_name
 
   tags = {
-    Name        = "My bucket"
-    Environment = "Dev"
+    Name        = var.bucket_name
+    Environment = var.environment
   }
 }
