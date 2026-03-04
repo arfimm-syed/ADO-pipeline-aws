@@ -1,0 +1,39 @@
+variables:
+  - group: var-pipeline
+
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+
+# -----------------------------
+# VALIDATE STAGE
+# -----------------------------
+- stage: Validate
+  displayName: 'Validation'
+  jobs:
+  - job: Validate
+    steps:
+    - checkout: self
+
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: '1.6.6'
+
+    - task: Bash@3
+      displayName: 'Install Checkov'
+      inputs:
+        targetType: inline
+        script: |
+          python3 -m pip install --upgrade pip
+          pip3 install checkov
+
+    - task: Bash@3
+      displayName: 'Security Scan'
+      inputs:
+        targetType: inline
+        script: |
+          checkov -d .
