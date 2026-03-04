@@ -61,7 +61,9 @@ stages:
       inputs:
         awsCredentials: 'aws-ser-con'
         regionName: 'us-east-1'
-      displayName: 'Authenticate to AWS'
+        displayName: 'Authenticate to AWS'
+        awsCommand: 'sts'
+        awsSubCommand: 'gt caller identity'
 
     - script: |
         terraform init \
