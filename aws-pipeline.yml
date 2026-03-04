@@ -38,35 +38,35 @@ stages:
           checkov -d terraform
       displayName: 'Security Scan'  
 
-# - stage: Plan
-#   displayName: Terraform 'Plan'
-#   dependsOn: Validate
-#   jobs:
-#   - job: Plan
-#     steps:
-#     - checkout: self
+- stage: Plan
+  displayName: Terraform 'Plan'
+  dependsOn: Validate
+  jobs:
+  - job: Plan
+    steps:
+    - checkout: self
 
-#     - task: TerraformInstaller@1
-#       inputs:
-#         terraformVersion: '1.6.6'
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: '1.6.6'
 
-#     - task: AWSCLI@1
-#       inputs:
-#         awsCredentials: 'aws-terraform-conn'
-#         regionName: 'us-east-1'
-#       displayName: 'Authenticate to AWS'
+    - task: AWSCLI@1
+      inputs:
+        awsCredentials: 'aws-terraform-conn'
+        regionName: 'us-east-1'
+      displayName: 'Authenticate to AWS'
 
-#     - script: |
-#         terraform init \
-#           -backend-config="bucket=my-terraform-state-bucket" \
-#           -backend-config="key=prod/afzal.tfstate" \
-#           -backend-config="region=us-east-1" \
-#           -backend-config="dynamodb_table=terraform-lock-table" \
-#           -backend-config="encrypt=true"
-#       displayName: 'Terraform Init'
+    - script: |
+        terraform init \
+          -backend-config="bucket=my-terraform-state-bucket" \
+          -backend-config="key=prod/afzal.tfstate" \
+          -backend-config="region=us-east-1" \
+          -backend-config="dynamodb_table=terraform-lock-table" \
+          -backend-config="encrypt=true"
+      displayName: 'Terraform Init'
 
-#     - script: terraform plan -out=tfplan
-#       displayName: 'Terraform Plan'
+    - script: terraform plan -out=tfplan
+      displayName: 'Terraform Plan'
 
 # - stage: Apply
 #   displayName: Terraform 'Apply'
