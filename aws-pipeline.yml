@@ -49,6 +49,13 @@ stages:
     - task: TerraformInstaller@1
       inputs:
         terraformVersion: '1.6.6'
+    
+    - script: |
+       curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+       unzip awscliv2.zip
+       sudo ./aws/install
+       aws --version
+      displayName: Install AWS CLI v2
 
     - task: AWSCLI@1
       inputs:
