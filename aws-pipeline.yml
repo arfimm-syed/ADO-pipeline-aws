@@ -59,7 +59,7 @@ stages:
 
     - task: AWSCLI@1
       inputs:
-        awsCredentials: 'aws-terraform-conn'
+        awsCredentials: 'aws-ser-con'
         regionName: 'us-east-1'
       displayName: 'Authenticate to AWS'
 
