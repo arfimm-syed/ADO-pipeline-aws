@@ -36,4 +36,5 @@ stages:
       inputs:
         targetType: inline
         script: |
-          checkov -d .
+          checkov -d terraform
+      displayName: 'Security Scan'  
