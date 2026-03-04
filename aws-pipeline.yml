@@ -21,7 +21,7 @@ stages:
 
     - task: JasonBJohnson.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
       inputs:
-      terraformVersion: '1.6.6'
+        terraformVersion: '1.6.6'
 
     - task: Bash@3
       displayName: 'Install Checkov'
