@@ -32,7 +32,6 @@ stages:
           pip3 install checkov
 
     - task: Bash@3
-      displayName: 'Security Scan'
       inputs:
         targetType: inline
         script: |
