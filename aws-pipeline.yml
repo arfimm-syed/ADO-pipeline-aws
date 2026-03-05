@@ -1,86 +1,50 @@
-variables:
-  - group: var-pipeline
+# variables:
+#   - group: var-pipeline
 
-trigger:
-- main
+# trigger:
+# - main
 
-pool:
-  vmImage: 'ubuntu-latest'
+# pool:
+#   vmImage: 'ubuntu-latest'
 
-stages:
+# stages:
 
-# -----------------------------
-# VALIDATE STAGE
-# -----------------------------
-- stage: Validate
-  displayName: 'Validation'
-  jobs:
-  - job: Validate
-    steps:
-    - checkout: self
-
-    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
-      inputs:
-        terraformVersion: '1.6.6'
-     
-    - task: Bash@3
-      displayName: 'Install Checkov'
-      inputs:
-        targetType: inline
-        script: |
-          python3 -m pip install --upgrade pip
-          pip3 install checkov
-
-    - task: Bash@3
-      inputs:
-        targetType: inline
-        script: |
-          checkov -d terraform
-      displayName: 'Security Scan'  
-
-# - stage: Plan
-#   displayName: Terraform 'Plan'
-#   dependsOn: Validate
+# # -----------------------------
+# # VALIDATE STAGE
+# # -----------------------------
+# - stage: Validate
+#   displayName: 'Validation'
 #   jobs:
-#   - job: Plan
+#   - job: Validate
 #     steps:
 #     - checkout: self
 
 #     - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
 #       inputs:
 #         terraformVersion: '1.6.6'
-
-#     - task: AWSCLI@1
+     
+#     - task: Bash@3
+#       displayName: 'Install Checkov'
 #       inputs:
-#         awsCredentials: 'aws-ser-con'
-#         regionName: 'us-east-1'
-#         displayName: 'Authenticate to AWS'
-#         awsCommand: 'sts'
-#         awsSubCommand: 'get-caller-identity'
-    
-#     - script: |
-#        export AWS_ACCESS_KEY_ID=$(AWS_Access_Key_ID)
-#        export AWS_SECRET_ACCESS_KEY=$(Secret_Access_Key)
-#        export AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION)
-#       displayName: 'Set AWS Environment Variables'
- 
-#     - script: |
-#         terraform init \
-#           -backend-config="bucket=$(s3_bucket)" \
-#           -backend-config="key=$(tfstate_key)" \
-#           -backend-config="region=$(aws_region)" \
-#           -backend-config="dynamodb_table=$(dynamodb_table)" \
-#           -backend-config="encrypt=true"
-#       displayName: 'Terraform Init'
+#         targetType: inline
+#         script: |
+#           python3 -m pip install --upgrade pip
+#           pip3 install checkov
 
-  
-# - stage: Apply
-#   displayName: Terraform 'Apply'
-#   dependsOn: Plan
-#   condition: succeeded()
+#     - task: Bash@3
+#       inputs:
+#         targetType: inline
+#         script: |
+#           checkov -d terraform
+#       displayName: 'Security Scan'
+
+
+# - stage: Plan
+#   displayName: Terraform 'Plan'
+#   dependsOn: Validate
 #   jobs:
-#   - job: Apply
-#     steps:
+#     - job: Plan
+#       steps:
 #     - checkout: self
 
 #     - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
@@ -97,7 +61,45 @@ stages:
     
 #     - task: Bash@3
 #       inputs:
-#         targetType: inline
+#         targetType: 'inline'
+#     - script: |
+#        export AWS_ACCESS_KEY_ID=$(AWS_Access_Key_ID)
+#        export AWS_SECRET_ACCESS_KEY=$(Secret_Access_Key)
+#        export AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION)
+#        displayName: 'Set AWS Environment Variables'
+#         terraform init \
+#           -backend-config="bucket=$(s3_bucket)" \
+#           -backend-config="key=$(tfstate_key)" \
+#           -backend-config="region=$(aws_region)" \
+#           -backend-config="dynamodb_table=$(dynamodb_table)" \
+#           -backend-config="encrypt=true"
+#       displayName: 'Terraform Plan'
+
+  
+# - stage: Apply
+#   displayName: Terraform 'Apply'
+#   dependsOn: Plan
+#   condition: succeeded()
+#   jobs:
+#     - job: Apply
+#       steps:
+#     - checkout: self
+
+#     - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+#       inputs:
+#         terraformVersion: '1.6.6'
+
+#     - task: AWSCLI@1
+#       inputs:
+#         awsCredentials: 'aws-ser-con'
+#         regionName: 'us-east-1'
+#         displayName: 'Authenticate to AWS'
+#         awsCommand: 'sts'
+#         awsSubCommand: 'get-caller-identity'
+    
+#     - task: Bash@3
+#       inputs:
+#         targetType: 'inline'
 #     - script: |
 #        export AWS_ACCESS_KEY_ID=$(AWS_Access_Key_ID)
 #        export AWS_SECRET_ACCESS_KEY=$(Secret_Access_Key)
@@ -111,71 +113,139 @@ stages:
 #        terraform apply -auto-approve
 #       displayName: 'Terraform Apply'
 
+# ================================
+# Azure DevOps Pipeline for AWS Terraform
+# ================================
+
+
+
+variables:
+  - group: var-pipeline   # Variable group containing AWS keys, region, S3 bucket, etc.
+
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+# -----------------------------
+# VALIDATE STAGE
+# -----------------------------
+stages:
+- stage: Validate
+  displayName: 'Validation'
+  jobs:
+  - job: Validate
+    displayName: 'Terraform Validation Job'
+    steps:
+      - checkout: self
+
+      - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+        inputs:
+          terraformVersion: '1.6.6'
+
+      - task: Bash@3
+        displayName: 'Install Checkov'
+        inputs:
+          targetType: 'inline'
+          script: |
+            python3 -m pip install --upgrade pip
+            pip3 install checkov
+
+      - task: Bash@3
+        displayName: 'Security Scan'
+        inputs:
+          targetType: 'inline'
+          script: |
+            checkov -d terraform
+
+# -----------------------------
+# PLAN STAGE
+# -----------------------------
 - stage: Plan
-  displayName: Terraform 'Plan'
+  displayName: "Terraform Plan"
   dependsOn: Validate
   jobs:
   - job: Plan
     displayName: 'Terraform Plan Job'
     steps:
-    - checkout: self
+      - checkout: self
 
-    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
-      inputs:
-        terraformVersion: '1.6.6'
+      - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+        inputs:
+          terraformVersion: '1.6.6'
 
-    - task: AWSCLI@1
-      inputs:
-        awsCredentials: 'aws-ser-con'
-        regionName: 'us-east-1'
-        displayName: 'Authenticate to AWS'
-        awsCommand: 'sts'
-        awsSubCommand: 'get-caller-identity'
+      - task: AWSCLI@1
+        inputs:
+          awsCredentials: 'aws-ser-con'
+          regionName: 'us-east-1'
+          displayName: 'Authenticate to AWS'
+          awsCommand: 'sts'
+          awsSubCommand: 'get-caller-identity'
 
-    - task: Bash@3
-      inputs:
-        targetType: 'inline'
-        script: |
-          
-          export AWS_ACCESS_KEY_ID=$AWS_Access_Key_ID
-          export AWS_SECRET_ACCESS_KEY=$Secret_Access_Key
-          export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+      - task: Bash@3
+        displayName: 'Terraform Init & Plan'
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Export AWS credentials for Terraform
+            export AWS_ACCESS_KEY_ID=$AWS_Access_Key_ID
+            export AWS_SECRET_ACCESS_KEY=$Secret_Access_Key
+            export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
 
-          
-          terraform init \
-            -backend-config="bucket=$s3_bucket" \
-            -backend-config="key=$tfstate_key" \
-            -backend-config="region=$aws_region" \
-            -backend-config="dynamodb_table=$dynamodb_table" \
-            -backend-config="encrypt=true"
+            # Terraform init with backend
+            terraform init \
+              -backend-config="bucket=$s3_bucket" \
+              -backend-config="key=$tfstate_key" \
+              -backend-config="region=$aws_region" \
+              -backend-config="dynamodb_table=$dynamodb_table" \
+              -backend-config="encrypt=true"
 
-          
-          terraform plan -out=tfplan
-      displayName: 'Terraform Init & Plan'
+            # Terraform plan
+            terraform plan -out=tfplan
 
+# -----------------------------
+# APPLY STAGE
+# -----------------------------
 - stage: Apply
-  displayName: Terraform 'Apply'
+  displayName: "Terraform Apply"
   dependsOn: Plan
   condition: succeeded()
   jobs:
   - job: Apply
     displayName: 'Terraform Apply Job'
     steps:
-    - checkout: self
+      - checkout: self
 
-    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
-      inputs:
-        terraformVersion: '1.6.6'
+      - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+        inputs:
+          terraformVersion: '1.6.6'
 
-    - task: Bash@3
-      inputs:
-        targetType: 'inline'
-        script: |
-          
-          export AWS_ACCESS_KEY_ID=$AWS_Access_Key_ID
-          export AWS_SECRET_ACCESS_KEY=$Secret_Access_Key
-          export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+      - task: AWSCLI@1
+        inputs:
+          awsCredentials: 'aws-ser-con'
+          regionName: 'us-east-1'
+          displayName: 'Authenticate to AWS'
+          awsCommand: 'sts'
+          awsSubCommand: 'get-caller-identity'
 
-          
-          terraform apply -auto-approve tfplan
-        displayName: 'Terraform Apply'
+      - task: Bash@3
+        displayName: 'Terraform Init & Apply'
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Export AWS credentials for Terraform
+            export AWS_ACCESS_KEY_ID=$AWS_Access_Key_ID
+            export AWS_SECRET_ACCESS_KEY=$Secret_Access_Key
+            export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+
+            # Terraform init (needed again for Apply)
+            terraform init \
+              -backend-config="bucket=$s3_bucket" \
+              -backend-config="key=$tfstate_key" \
+              -backend-config="region=$aws_region" \
+              -backend-config="dynamodb_table=$dynamodb_table" \
+              -backend-config="encrypt=true"
+
+            # Terraform apply
+            terraform apply -auto-approve tfplan
