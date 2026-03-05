@@ -36,7 +36,7 @@ stages:
         targetType: inline
         script: |
          checkov -d terraform
-      displayName: 'Security Scan'
+        displayName: 'Security Scan'
 
 
 - stage: Plan
@@ -72,7 +72,7 @@ stages:
           -backend-config="region=$(aws_region)" \
           -backend-config="dynamodb_table=$(dynamodb_table)" \
           -backend-config="encrypt=true"
-      displayName: 'Terraform Plan'
+        displayName: 'Terraform Plan'
 
   
 - stage: Apply
@@ -110,5 +110,5 @@ stages:
           -backend-config="dynamodb_table=$(dynamodb_table)" \
           -backend-config="encrypt=true"
          terraform apply -auto-approve
-      displayName: 'Terraform Apply'
+        displayName: 'Terraform Apply'
 
