@@ -109,6 +109,6 @@ stages:
             -backend-config="region=$(aws_region)" \
             -backend-config="dynamodb_table=$(dynamodb_table)" \
             -backend-config="encrypt=true"
-          terraform apply -auto-approve
+           terraform apply -auto-approve
           displayName: 'Terraform Apply'
 
