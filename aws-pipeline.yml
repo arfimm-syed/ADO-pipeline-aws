@@ -49,13 +49,6 @@ stages:
     - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
       inputs:
         terraformVersion: '1.6.6'
-    
-    # - script: |
-    #    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-    #    unzip awscliv2.zip
-    #    sudo ./aws/install
-    #    aws --version
-    #   displayName: Install AWS CLI v2
 
     - task: AWSCLI@1
       inputs:
@@ -80,45 +73,42 @@ stages:
           -backend-config="encrypt=true"
       displayName: 'Terraform Init'
 
-    # - script: |
-    #     terraform init \
-    #       -backend-config="bucket=my-terraform-state-bucket" \
-    #       -backend-config="key=prod/afzal.tfstate" \
-    #       -backend-config="region=us-east-1" \
-    #       -backend-config="dynamodb_table=terraform-lock-table" \
-    #       -backend-config="encrypt=true"
-    #   displayName: 'Terraform Init'
+  
+- stage: Apply
+  displayName: Terraform 'Apply'
+  dependsOn: Plan
+  condition: succeeded()
+  jobs:
+  - job: Apply
+    steps:
+    - checkout: self
 
-    # - script: terraform plan -out=tfplan
-    #   displayName: 'Terraform Plan'
+    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+      inputs:
+        terraformVersion: '1.6.6'
 
-# - stage: Apply
-#   displayName: Terraform 'Apply'
-#   dependsOn: Plan
-#   condition: succeeded()
-#   jobs:
-#   - job: Apply
-#     steps:
-#     - checkout: self
+    - task: AWSCLI@1
+      inputs:
+        awsCredentials: 'aws-ser-con'
+        regionName: 'us-east-1'
+        displayName: 'Authenticate to AWS'
+        awsCommand: 'sts'
+        awsSubCommand: 'get-caller-identity'
 
-#     - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
-#       inputs:
-#         terraformVersion: '1.6.6'
+    - script: |
+       export AWS_ACCESS_KEY_ID=$(AWS_Access_Key_ID)
+       export AWS_SECRET_ACCESS_KEY=$(Secret_Access_Key)
+       export AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION)
+      displayName: 'Set AWS Environment Variables' 
 
-#     - task: AWSCLI@1
-#       inputs:
-#         awsCredentials: 'aws-terraform-conn'
-#         regionName: 'us-east-1'
-#       displayName: 'Authenticate to AWS'
+    - script: |
+        terraform init \
+          -backend-config="bucket=$(s3_bucket)" \
+          -backend-config="key=$(tfstate_key)" \
+          -backend-config="region=$(aws_region)" \
+          -backend-config="dynamodb_table=$(dynamodb_table)" \
+          -backend-config="encrypt=true"
+      displayName: 'Terraform Init'
 
-#     - script: |
-#         terraform init \
-#           -backend-config="bucket=my-terraform-state-bucket" \
-#           -backend-config="key=prod/afzal.tfstate" \
-#           -backend-config="region=us-east-1" \
-#           -backend-config="dynamodb_table=terraform-lock-table" \
-#           -backend-config="encrypt=true"
-#       displayName: 'Terraform Init'
-
-#     - script: terraform apply -auto-approve
-#       displayName: 'Terraform Apply'
+    - script: terraform apply -auto-approve
+      displayName: 'Terraform Apply'
