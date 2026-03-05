@@ -64,18 +64,33 @@ stages:
         displayName: 'Authenticate to AWS'
         awsCommand: 'sts'
         awsSubCommand: 'get-caller-identity'
-
+    
+    - script: |
+       export AWS_ACCESS_KEY_ID=$(AWS_Access_Key_ID)
+       export AWS_SECRET_ACCESS_KEY=$(Secret_Access_Key)
+       export AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION)
+      displayName: 'Set AWS Environment Variables'
+ 
     - script: |
         terraform init \
-          -backend-config="bucket=my-terraform-state-bucket" \
-          -backend-config="key=prod/afzal.tfstate" \
-          -backend-config="region=us-east-1" \
-          -backend-config="dynamodb_table=terraform-lock-table" \
+          -backend-config="bucket=$(s3_bucket)" \
+          -backend-config="key=$(tfstate_key)" \
+          -backend-config="region=$(aws_region)" \
+          -backend-config="dynamodb_table=$(dynamodb_table)" \
           -backend-config="encrypt=true"
       displayName: 'Terraform Init'
 
-    - script: terraform plan -out=tfplan
-      displayName: 'Terraform Plan'
+    # - script: |
+    #     terraform init \
+    #       -backend-config="bucket=my-terraform-state-bucket" \
+    #       -backend-config="key=prod/afzal.tfstate" \
+    #       -backend-config="region=us-east-1" \
+    #       -backend-config="dynamodb_table=terraform-lock-table" \
+    #       -backend-config="encrypt=true"
+    #   displayName: 'Terraform Init'
+
+    # - script: terraform plan -out=tfplan
+    #   displayName: 'Terraform Plan'
 
 # - stage: Apply
 #   displayName: Terraform 'Apply'
