@@ -47,22 +47,22 @@ stages:
       steps:
       - checkout: self
 
-    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
-      inputs:
+      - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+        inputs:
         terraformVersion: '1.6.6'
 
-    - task: AWSCLI@1
-      inputs:
+      - task: AWSCLI@1
+        inputs:
         awsCredentials: 'aws-ser-con'
         regionName: 'us-east-1'
         displayName: 'Authenticate to AWS'
         awsCommand: 'sts'
         awsSubCommand: 'get-caller-identity'
     
-    - task: Bash@3
-      inputs:
-      targetType: 'inline'
-      script: |
+      - task: Bash@3
+        inputs:
+        targetType: 'inline'
+        script: |
          export AWS_ACCESS_KEY_ID=$(AWS_Access_Key_ID)
          export AWS_SECRET_ACCESS_KEY=$(Secret_Access_Key)
          export AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION)
@@ -72,7 +72,7 @@ stages:
           -backend-config="region=$(aws_region)" \
           -backend-config="dynamodb_table=$(dynamodb_table)" \
           -backend-config="encrypt=true"
-      displayName: 'Terraform Plan'
+        displayName: 'Terraform Plan'
 
   
 - stage: Apply
@@ -84,20 +84,20 @@ stages:
       steps:
       - checkout: self
 
-    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
-      inputs:
+      - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+        inputs:
         terraformVersion: '1.6.6'
 
-    - task: AWSCLI@1
-      inputs:
+      - task: AWSCLI@1
+        inputs:
         awsCredentials: 'aws-ser-con'
         regionName: 'us-east-1'
         displayName: 'Authenticate to AWS'
         awsCommand: 'sts'
         awsSubCommand: 'get-caller-identity'
     
-    - task: Bash@3
-      inputs:
+      - task: Bash@3
+        inputs:
         targetType: 'inline'
         script: |
          export AWS_ACCESS_KEY_ID=$(AWS_Access_Key_ID)
